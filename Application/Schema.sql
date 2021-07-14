@@ -1,14 +1,14 @@
 -- Your database schema. Use the Schema Designer at http://localhost:8001/ to add some tables.
 CREATE TABLE comparisons (
-    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY NOT NULL,
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY NOT NULL UNIQUE,
     skill1 TEXT NOT NULL,
     skill2 TEXT NOT NULL,
     winner INT NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL
 );
 CREATE TABLE skills (
-    id INT NOT NULL UNIQUE,
-    name TEXT PRIMARY KEY NOT NULL UNIQUE,
+    id INT PRIMARY KEY NOT NULL UNIQUE,
+    name TEXT NOT NULL UNIQUE,
     image TEXT NOT NULL
 );
 CREATE TABLE make_list_jobs (

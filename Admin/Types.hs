@@ -33,4 +33,4 @@ data ComparisonsController
 data Match = Match
     { wins :: Text
     , loses :: Text
-    } deriving (Generic, Show)
+    } deriving (Generic, Eq, Show, Data)

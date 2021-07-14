@@ -2,23 +2,22 @@ module Admin.Job.MakeList where
 
 import Admin.Controller.Prelude
 import qualified Data.Dynamic
-import qualified Data.Vector as V
+import qualified Data.Map as M
+import qualified Data.HashTable.IO as H
 import Statistics.Sample
 import Database.PostgreSQL.Simple.Types
 import Database.PostgreSQL.Simple.FromRow
 import Database.PostgreSQL.Simple.SqlQQ
 
+type HashTable k v = H.CuckooHashTable k v
+
 instance Job MakeListJob where
     perform MakeListJob { .. } = do
         matches <- fetchMatches
         matchesCount <- query @Comparison |> fetchCount
-        let matchesVector = V.fromList 
+        rankings :: HashTable Text Int <- H.new
         forEach matches \match -> do
-            skillW <- query @Skill |> findBy #name (get #wins match)
-            skillL <- query @Skill |> findBy #name (get #losess match)
-            let 
-            let matchesVector V.! (get #id skillW) V.! (get #id skillL) = 0
-            putStrLn $ tshow $ get #wins match
+            H.insert rankings (get #wins match) 0
 
 instance FromRow Match where
     fromRow = Match <$> field <*> field
