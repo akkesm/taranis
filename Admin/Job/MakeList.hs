@@ -1,10 +1,7 @@
 module Admin.Job.MakeList where
 
 import Admin.Controller.Prelude
-import qualified Data.Dynamic
-import qualified Data.Map as M
 import qualified Data.HashTable.IO as H
-import Statistics.Sample
 import Database.PostgreSQL.Simple.Types
 import Database.PostgreSQL.Simple.FromRow
 import Database.PostgreSQL.Simple.SqlQQ
@@ -15,9 +12,33 @@ instance Job MakeListJob where
     perform MakeListJob { .. } = do
         matches <- fetchMatches
         matchesCount <- query @Comparison |> fetchCount
-        rankings :: HashTable Text Int <- H.new
+        victories :: HashTable Text Int <- H.newSized 84
+        losses :: HashTable Text Int <- H.newSized 84
+        skills <- query @Skill |> fetch
         forEach matches \match -> do
-            H.insert rankings (get #wins match) 0
+            let winner = get #wins match
+            maybeNumWins <- H.lookup victories winner
+            let numWins = fromMaybe 0 maybeNumWins
+
+            let loser = get #loses match
+            maybeNumLosses <- H.lookup losses loser
+            let numLosses = fromMaybe 0 maybeNumLosses
+
+            H.insert victories winner $ numWins + 1
+            H.insert losses loser $ numLosses + 1
+
+        winRates ::HashTable Text Int <- H.newSized 84
+        forEach skills \skill -> do
+            let skillName = get #name skill
+
+            maybeSkillWins <- H.lookup victories skillName
+            let skillWins = fromMaybe 0 maybeSkillWins
+
+            maybeSkillLosses <- H.lookup losses skillName
+            let skillLosses = fromMaybe 0 maybeSkillLosses
+
+            H.insert winRates skillName $ div skillWins skillLosses
+
 
 instance FromRow Match where
     fromRow = Match <$> field <*> field
