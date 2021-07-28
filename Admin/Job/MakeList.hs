@@ -1,20 +1,22 @@
 module Admin.Job.MakeList where
 
 import Admin.Controller.Prelude
+import Data.Text.IO (writeFile)
+import System.Directory (copyFile)
 import qualified Data.HashTable.IO as H
 import Database.PostgreSQL.Simple.Types
 import Database.PostgreSQL.Simple.FromRow
 import Database.PostgreSQL.Simple.SqlQQ
+import Data.Time.Clock (getCurrentTime)
+import Data.Time.Format (formatTime, defaultTimeLocale)
 
 type HashTable k v = H.CuckooHashTable k v
 
 instance Job MakeListJob where
     perform MakeListJob { .. } = do
         matches <- fetchMatches
-        matchesCount <- query @Comparison |> fetchCount
         victories :: HashTable Text Int <- H.newSized 84
         losses :: HashTable Text Int <- H.newSized 84
-        skills <- query @Skill |> fetch
         forEach matches \match -> do
             let winner = get #wins match
             maybeNumWins <- H.lookup victories winner
@@ -27,6 +29,7 @@ instance Job MakeListJob where
             H.insert victories winner $ numWins + 1
             H.insert losses loser $ numLosses + 1
 
+        skills <- query @Skill |> fetch
         winRates ::HashTable Text Int <- H.newSized 84
         forEach skills \skill -> do
             let skillName = get #name skill
@@ -38,6 +41,18 @@ instance Job MakeListJob where
             let skillLosses = fromMaybe 0 maybeSkillLosses
 
             H.insert winRates skillName $ div skillWins skillLosses
+
+        currentDate <- getCurrentTime
+        let date = formatTime defaultTimeLocale "%F" currentDate
+        let file = "../../static/lists/" ++ date ++ ".txt"
+        forEach skills \skill -> do
+            let skillName = get #name skill
+
+            maybeSkillWinrate <- H.lookup winRates skillName
+            let skillWinrate = fromMaybe 0 maybeSkillWinrate
+
+            writeFile file (tshow skillWinrate ++ skillName ++ "\n")
+        copyFile file "../../static/lists/latest.txt"
 
 
 instance FromRow Match where
