@@ -20,7 +20,7 @@ instance Controller ComparisonsController where
         let voteInt :: Int = fromMaybe 1 vote
         if voteInt >= 83
             then do
-                setSession "currentVote" ""
+                setSession "currentVote" $ tshow ""
                 redirectTo ComparisonsAction
             else do
                 setSession "currentVote" (tshow (voteInt + 1))
@@ -39,7 +39,7 @@ instance Controller ComparisonsController where
         let voteInt :: Int = fromMaybe 1 vote
         if voteInt >= 83
             then do
-                setSession "currentVote" ""
+                setSession "currentVote" $ tshow ""
                 redirectTo ComparisonsAction
             else do
                 setSession "currentVote" (tshow (voteInt + 1))

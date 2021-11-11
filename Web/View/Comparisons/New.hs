@@ -21,8 +21,8 @@ instance View NewView where
             </nav>
             <h3 style="text-align: center">Select which ability you would pick in game</h3>
             {renderForm comparison skillOne skillTwo}
-            -- <br><br><br><br>
-            -- <footer style="text-align: center;"><a href="https://github.com/akkesm/taranis" target="_blank">Source</a></footer>
+            <br><br><br><br>
+            <footer style="text-align: center;"><a href="https://github.com/akkesm/taranis" target="_blank">Source</a></footer>
         |]
 
 renderForm :: Comparison -> Skill -> Skill -> Html
