@@ -16,7 +16,7 @@ instance Controller ComparisonsController where
 
     action CreateComparisonAction = do
         let comparison = newRecord @Comparison
-        vote <- getSessionInt "currentVote"
+        vote <- getSession "currentVote"
         let voteInt :: Int = fromMaybe 1 vote
         if voteInt >= 83
             then do
@@ -35,7 +35,7 @@ instance Controller ComparisonsController where
                             redirectTo NewComparisonAction { vote }
 
     action WinnerNoneComparisonAction = do
-        vote <- getSessionInt "currentVote"
+        vote <- getSession "currentVote"
         let voteInt :: Int = fromMaybe 1 vote
         if voteInt >= 83
             then do
